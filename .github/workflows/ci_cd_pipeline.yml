@@ -1,0 +1,37 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Run tests
+      run: python -m unittest discover
+
+  versioning:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run versioning script
+      run: python versioning_script.py
+
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    steps:
+    - name: Deploy new version
+      run: echo "Deploying version ${{ github.ref }}"
